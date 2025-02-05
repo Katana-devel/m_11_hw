@@ -14,7 +14,7 @@ class ContactSchema(BaseModel):
 class ContactUpdateSchema(BaseModel):
     name: str | None = Field(None, min_length=3, max_length=50)
     surname: str | None = Field(None, min_length=3, max_length=50)
-    email: EmailStr | None = None
+    email: EmailStr | None = Field(None, max_length=255)
     phone: str | None = Field(None, min_length=3, max_length=50)
     birthday: date | None = None
     extra_info: str | None = Field(None, min_length=3, max_length=250)
