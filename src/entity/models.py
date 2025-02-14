@@ -2,7 +2,7 @@ from datetime import date
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID, generics
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
-from sqlalchemy import String, Date, Integer, Column, DateTime, func, ForeignKey
+from sqlalchemy import String, Date, Integer, DateTime, func, ForeignKey, Boolean
 
 
 class Base(DeclarativeBase):
@@ -24,7 +24,16 @@ class Contact(Base):
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
+    __tablename__ = 'user'  # Указываем явно имя таблицы
+
     name: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
     surname: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
     created_at: Mapped[date] = mapped_column('created_at', DateTime, default=func.now())
     updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
+    confirmed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
+    email: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+
+    # Устанавливаем email как username
+    @property
+    def username(self):
+        return self.email

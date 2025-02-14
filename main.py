@@ -4,8 +4,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.fu_db import get_db
-from src.routes import contacts
-from src.routes import auth
+from src.routes import contacts, user, auth
+
 
 app = FastAPI()
 
@@ -20,6 +20,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(user.router)
 app.include_router(contacts.router, prefix="/api")
 
 

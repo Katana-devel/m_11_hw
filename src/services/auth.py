@@ -1,6 +1,10 @@
+from datetime import datetime, timedelta
 import uuid
 from typing import Optional
+from typing import AsyncContextManager, AsyncGenerator, AsyncIterator
 
+from fastapi import HTTPException, status
+from jose import JWTError, jwt
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin, models
 from fastapi_users.authentication import (
@@ -10,9 +14,11 @@ from fastapi_users.authentication import (
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
 
+from src.conf.config import config
 from src.database.fu_db import User, get_user_db
 
-SECRET_KEY = "974790aec4ac460bdc11645decad4dce7c139b7f2982b7428ec44e886ea588c6"  # TODO прибрать в ENV файл
+SECRET_KEY = config.SECRET_KEY_JWT
+ALGORITHM = config.ALGORITHM
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
@@ -22,15 +28,30 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         print(f"User {user.id} has registered.")
 
-    async def on_after_forgot_password(
-        self, user: User, token: str, request: Optional[Request] = None
-    ):
+    async def on_after_forgot_password(self, user: User, token: str, request: Optional[Request] = None):
         print(f"User {user.id} has forgot their password. Reset token: {token}")
 
-    async def on_after_request_verify(
-        self, user: User, token: str, request: Optional[Request] = None
-    ):
+    async def on_after_request_verify(self, user: User, token: str, request: Optional[Request] = None):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
+
+
+def create_email_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.now() + timedelta(days=1)
+    to_encode.update({"iat": datetime.now(), "exp": expire})
+    encoded_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_token
+
+
+def get_email_from_token(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload['sub']
+        return email
+    except JWTError as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail='invalid token for email verification')
 
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
