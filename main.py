@@ -7,6 +7,7 @@ from src.database.fu_db import get_db
 from src.routes import contacts, user, auth
 
 
+
 app = FastAPI()
 
 origins = ["*"]
