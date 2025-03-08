@@ -20,7 +20,7 @@ async def get_contact(contact_id: int, db: AsyncSession):
 
 
 async def create_contacts(body: ContactSchema, db: AsyncSession):
-    contact = Contact(**body.model_dump(exclude_unset=True))  # Используем .dict()
+    contact = Contact(**body.model_dump(exclude_unset=True))
     db.add(contact)
     await db.commit()
     await db.refresh(contact)
@@ -37,7 +37,7 @@ async def update_contacts(contact_id: int, body: ContactUpdateSchema, db: AsyncS
         contact.email = body.email
         contact.phone = body.phone
         contact.birthday = body.birthday
-        contact.description = body.description
+        contact.extra_info = body.extra_info
         await db.commit()
         await db.refresh(contact)
     return contact
