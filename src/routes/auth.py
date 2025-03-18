@@ -1,3 +1,9 @@
+"""
+This module defines API routes for user authentication and user management.
+It integrates FastAPI Users' authentication system using JWT, user registration,
+password reset, email verification, and user CRUD operations.
+"""
+
 from fastapi import APIRouter
 
 from src.schemas.user import UserCreate, UserRead, UserUpdate
